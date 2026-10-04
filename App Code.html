@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منظومة متابعة الخطة التطويرية - ثانوية الملك عبد الله بن عبد العزيز</title>
+    <!-- Firebase SDKs (Compat Version for Direct Browser Scripting) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <style>
+        :root {
+            --primary-color: #0d5c3a;
+            --primary-light: #e8f5e9;
+            --secondary-color: #1565c0;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --success-color: #16a34a;
+            --danger-color: #dc2626;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding: 20px; line-height: 1.6; }
+        .container { max-width: 1300px; margin: 0 auto; }
+
+        /* Login Modal */
+        #login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px);
+            display: flex; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .login-card {
+            background: white; padding: 35px 30px; border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); width: 100%; max-width: 420px; text-align: center;
+        }
+        .login-card h2 { color: var(--primary-color); margin-bottom: 8px; font-size: 1.4rem; }
+        .login-card p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; text-align: right; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; }
+        .form-control {
+            width: 100%; padding: 10px 14px; border: 1px solid var(--border-color);
+            border-radius: 8px; font-size: 0.95rem; outline: none; transition: 0.2s;
+        }
+        .form-control:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(13, 92, 58, 0.15); }
+        
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary-color), #052e16);
+            color: white; padding: 25px 20px; border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); margin-bottom: 25px; text-align: center;
+        }
+        header h1 { font-size: 1.6rem; margin-bottom: 6px; font-weight: 700; }
+        header h2 { font-size: 1.1rem; font-weight: 400; opacity: 0.9; }
+
+        .user-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            background: white; padding: 12px 20px; border-radius: 10px;
+            margin-bottom: 20px; border: 1px solid var(--border-color); font-weight: 600;
+        }
+        .user-role-badge {
+            background: var(--primary-light); color: var(--primary-color);
+            padding: 4px 12px; border-radius: 12px; font-size: 0.85rem;
+        }
+
+        /* Dashboard */
+        .dashboard {
+            background: var(--card-bg); padding: 20px; border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid var(--border-color);
+        }
+        .progress-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-weight: 600; }
+        .progress-bar-container { width: 100%; height: 18px; background-color: #e2e8f0; border-radius: 10px; overflow: hidden; }
+        .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary-color), var(--success-color)); transition: width 0.4s ease; }
+
+        /* Controls */
+        .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px; flex-wrap: wrap; }
+        .btn { padding: 8px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.88rem; transition: all 0.2s ease; }
+        .btn-primary { background: var(--primary-color); color: white; }
+        .btn-primary:hover { background: #0b4a2f; }
+        .btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text-main); }
+        .btn-outline:hover { background: #f1f5f9; }
+        .btn-danger { background: #fee2e2; color: var(--danger-color); border: 1px solid #fca5a5; }
+
+        /* Term Tabs */
+        .term-tabs { display: flex; gap: 10px; margin-bottom: 15px; }
+        .tab-btn {
+            padding: 10px 20px; background: white; border: 1px solid var(--border-color);
+            border-radius: 8px; font-weight: 700; cursor: pointer; color: var(--text-muted);
+        }
+        .tab-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+
+        /* Tables & Cards */
+        .phase-card { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 25px; overflow: hidden; }
+        .phase-header { padding: 15px 20px; background: #f8fafc; border-bottom: 1px solid var(--border-color); font-weight: 700; color: var(--primary-color); display: flex; justify-content: space-between; }
+        .table-responsive { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: right; }
+        th { background-color: #f1f5f9; padding: 12px 15px; font-size: 0.85rem; font-weight: 700; border-bottom: 2px solid var(--border-color); }
+        td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); font-size: 0.88rem; vertical-align: middle; }
+        
+        .status-select {
+            padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color);
+            font-size: 0.82rem; font-weight: 600; cursor: pointer; outline: none; width: 100%;
+        }
+        .status-select[data-status="done"] { background-color: #dcfce7; color: #15803d; border-color: #86efac; }
+        .status-select[data-status="progress"] { background-color: #fef9c3; color: #a16207; border-color: #fde047; }
+        .status-select[data-status="none"] { background-color: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
+
+        .evidence-input {
+            width: 100%; padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.8rem;
+        }
+
+        footer { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-top: 30px; }
+        .signature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; text-align: center; }
+        .sig-box { padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px dashed var(--border-color); }
+
+        @media print {
+            #login-overlay, .controls, .user-bar, .term-tabs { display: none !important; }
+            body { background: white; padding: 0; }
+            .phase-card { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Login Modal -->
+<div id="login-overlay">
+    <div class="login-card">
+        <h2>نظام متابعة الخطة التطويرية</h2>
+        <p>ثانوية الملك عبد الله بن عبد العزيز (مسارات)</p>
+        <form onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label>اختر الحساب / الصلاحية:</label>
+                <select id="user-role" class="form-control" required>
+                    <option value="">-- اختر المستخدم --</option>
+                    <option value="saeed">أ. سعيد فرج (مسؤول المتابعة والتنفيذ)</option>
+                    <option value="yousef">أ. يوسف القرني (مسؤول الشواهد والأرشفة)</option>
+                    <option value="manager">أ. ناصر الحكيم (مدير المدرسة)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>الرمز السرّي (PIN):</label>
+                <input type="password" id="user-pin" class="form-control" placeholder="أدخل الرقم السري" required maxlength="4">
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 10px; margin-top: 10px;">تسجيل الدخول</button>
+        </form>
+    </div>
+</div>
+
+<div class="container">
+    <header>
+        <h1>ثانوية الملك عبد الله بن عبد العزيز (مسارات)</h1>
+        <h2>منظومة المتابعة الرقمية المباشرة للخطة التطويرية</h2>
+    </header>
+
+    <div class="user-bar">
+        <div>
+            <span>المستخدم الحالي: </span>
+            <span id="current-user-name">...</span>
+        </div>
+        <div>
+            <span class="user-role-badge" id="current-user-role">...</span>
+            <button class="btn btn-outline" onclick="logout()" style="margin-right: 10px; padding: 4px 10px;">خروج</button>
+        </div>
+    </div>
+
+    <div class="dashboard">
+        <div class="progress-title">
+            <span>مؤشر إنجاز الخطة العام</span>
+            <span id="progress-text">0%</span>
+        </div>
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div>
+            <button class="btn btn-primary" onclick="window.print()">🖨️ طباعة التقرير</button>
+        </div>
+        <div id="manager-controls" style="display: none;">
+            <button class="btn btn-danger" onclick="resetAll()">🔄 إعادة ضبط البيانات</button>
+        </div>
+    </div>
+
+    <div class="term-tabs">
+        <button class="tab-btn active" onclick="switchTerm('الأول', this)">🟢 الفصل الدراسي الأول</button>
+        <button class="tab-btn" onclick="switchTerm('الثاني', this)">🔵 الفصل الدراسي الثاني</button>
+    </div>
+
+    <div class="phase-card">
+        <div class="phase-header">
+            <span id="current-term-title">جدول عمليات الفصل الدراسي الأول</span>
+            <span style="font-size: 0.85rem; font-weight: normal; color: var(--text-muted);">بداية الخطة: 4 أكتوبر</span>
+        </div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">اليوم والجهة</th>
+                        <th style="width: 18%;">التاريخ</th>
+                        <th style="width: 27%;">الإجراء التنفيذي</th>
+                        <th style="width: 15%;">الشاهد المطلوب</th>
+                        <th style="width: 12%;">حالة التنفيذ (أ.سعيد)</th>
+                        <th style="width: 13%;">رابط الشاهد (أ.يوسف)</th>
+                    </tr>
+                </thead>
+                <tbody id="plan-table-body">
+                    <!-- Dynamic Data -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <footer>
+        <div class="signature-grid">
+            <div class="sig-box">
+                <div style="font-size: 0.8rem; color: var(--text-muted);">مسؤول المتابعة والتنفيذ</div>
+                <div style="font-weight: 700;">أ. سعيد فرج</div>
+            </div>
+            <div class="sig-box">
+                <div style="font-size: 0.8rem; color: var(--text-muted);">مسؤول الشواهد والأرشفة</div>
+                <div style="font-weight: 700;">أ. يوسف القرني</div>
+            </div>
+            <div class="sig-box">
+                <div style="font-size: 0.8rem; color: var(--text-muted);">مدير المدرسة</div>
+                <div style="font-weight: 700;">أ. ناصر الحكيم</div>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<script>
+    // ⚙️ إعدادات Firebase الخاصة بمشروعك
+    const firebaseConfig = {
+        apiKey: "AIzaSyCeUxDOshkAVDZtnYJZv9nX-avJWzwiF9Q",
+        authDomain: "school-indicators-app-a3ab6.firebaseapp.com",
+        databaseURL: "https://school-indicators-app-a3ab6-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "school-indicators-app-a3ab6",
+        storageBucket: "school-indicators-app-a3ab6.firebasestorage.app",
+        messagingSenderId: "209892138885",
+        appId: "1:209892138885:web:ad3742062324a6307faeec"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const users = {
+        "saeed": { name: "أ. سعيد فرج", role: "مسؤول المتابعة والتنفيذ", pin: "2222" },
+        "yousef": { name: "أ. يوسف القرني", role: "مسؤول الشواهد والأرشفة", pin: "3332" },
+        "manager": { name: "أ. ناصر الحكيم", role: "مدير المدرسة", pin: "1111" }
+    };
+
+    const tasksData = [
+        { id: 1, term: "الأول", role: "الإدارة واللجان", day: "الأحد", date: "4 أكتوبر (23 ربيع الثاني)", task: "الاعتماد الرسمي للجان وتوزيع المهام واستكمال الجاهزية.", proof: "قرار تشكيل اللجان المعتمد" },
+        { id: 2, term: "الأول", role: "لجنة التحصيل", day: "الإثنين", date: "5 أكتوبر (24 ربيع الثاني)", task: "تطبيق الاختبار التشخيصي الرقمي للقدرات والمهارات.", proof: "تقرير نتائج التقييم التشخيصي" },
+        { id: 3, term: "الأول", role: "معلمو المواد", day: "الثلاثاء", date: "6 أكتوبر (25 ربيع الثاني)", task: "تطبيق استراتيجية الـ 5 دقائق لحل القدرات بالحصة.", proof: "استمارات الزيارات الصفية" },
+        { id: 4, term: "الأول", role: "لجنة التحصيل", day: "الخميس", date: "8 أكتوبر (27 ربيع الثاني)", task: "إطلاق تحدي القدرات الأسبوعي الأول عبر Forms.", proof: "رابط وتقارير النموذج" },
+        { id: 5, term: "الأول", role: "التوجيه الطلابي", day: "الثلاثاء", date: "27 أكتوبر (16 جمادى الأولى)", task: "ورشة عمل لأولياء الأمور: دعم مهارات الأبناء.", proof: "محضر وقائمة الحضور" },
+        { id: 6, term: "الأول", role: "لجنة التميز", day: "الأربعاء", date: "4 نوفمبر (25 جمادى الأولى)", task: "تنفيذ درس تطبيقي في التفكير الناقد وحل المشكلات.", proof: "تقرير الزيارة التبادلية" },
+        { id: 7, term: "الأول", role: "اللجنة الإدارية", day: "الإثنين", date: "16 نوفمبر (7 جمادى الثانية)", task: "توقيع عقد الشراكة المجتمعية النوعية.", proof: "عقد الشراكة المعتمد" },
+        { id: 8, term: "الأول", role: "لجنة التحصيل", day: "الثلاثاء", date: "2 ديسمبر (22 جمادى الثانية)", task: "تطبيق اختبار المحاكاة التجريبي الأول للقدرات.", proof: "نتائج تحليل الاختبار" },
+        { id: 9, term: "الأول", role: "التوجيه والنشاط", day: "الأربعاء", date: "23 ديسمبر (14 رجب)", task: "احتفالية تكريم الطلاب المتميزين والأندية التقنية.", proof: "صور الفعالية والتكريم" },
+        { id: 10, term: "الثاني", role: "لجنة التحصيل", day: "الأحد", date: "17 يناير (9 شعبان)", task: "مراجعة خريطة نواتج التعلم وتحديث خطة الدعم العلاجي والتعزيزي.", proof: "خطة الدعم والتعزيز المعتمدة" },
+        { id: 11, term: "الثاني", role: "معلمو المواد", day: "الثلاثاء", date: "26 يناير (18 شعبان)", task: "تنفيذ معارض ومشاريع المهارات الرقمية والذكاء الاصطناعي.", proof: "توثيق معرض المشاريع" },
+        { id: 12, term: "الثاني", role: "لجنة التميز", day: "الأربعاء", date: "10 فبراير (3 رمضان)", task: "تنفيذ ورشة عمل متخصصة في الأمان السيبراني للطلاب.", proof: "تقرير تنفيذ الورشة والانطباعات" },
+        { id: 13, term: "الثاني", role: "لجنة التحصيل", day: "الإثنين", date: "1 مارس (22 رمضان)", task: "تطبيق اختبار المحاكاة التجريبي الثاني لمكاسب القدرات والتحصيلي.", proof: "تقرير قياس الأثر والنمو" },
+        { id: 14, term: "الثاني", role: "النشاط والتوجيه", day: "الثلاثاء", date: "13 أبريل (6 شوال)", task: "تنظيم ملتقى التوجيه المهني والجامعي لطلاب الثانوي.", proof: "جدول الجلسات وقوائم الحضور" },
+        { id: 15, term: "الثاني", role: "لجنة التميز", day: "الأحد", date: "2 مايو (25 شوال)", task: "مراجعة الشواهد المكتملة وتدقيق المجلد السحابي والتقويم.", proof: "السجل العام للشواهد السحابية" },
+        { id: 16, term: "الثاني", role: "إدارة المدرسة", day: "الخميس", date: "20 مايو (13 ذو القعدة)", task: "اعتماد التقرير الختامي لمؤشرات الأداء وتصديره.", proof: "التقرير التنفيذي المعتمد final" }
+    ];
+
+    let currentUser = null;
+    let selectedTerm = "الأول";
+    let cloudStatus = {};
+    let cloudLinks = {};
+
+    function handleLogin(e) {
+        e.preventDefault();
+        const roleKey = document.getElementById("user-role").value;
+        const pin = document.getElementById("user-pin").value;
+
+        if (users[roleKey] && users[roleKey].pin === pin) {
+            currentUser = { key: roleKey, ...users[roleKey] };
+            document.getElementById("login-overlay").style.display = "none";
+            initApp();
+        } else {
+            alert("الرقم السري غير صحيح!");
+        }
+    }
+
+    function logout() {
+        document.getElementById("login-overlay").style.display = "flex";
+        document.getElementById("user-pin").value = "";
+    }
+
+    function switchTerm(term, btn) {
+        selectedTerm = term;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById("current-term-title").innerText = `جدول عمليات الفصل الدراسي ${term}`;
+        renderTable();
+    }
+
+    function initApp() {
+        document.getElementById("current-user-name").innerText = currentUser.name;
+        document.getElementById("current-user-role").innerText = currentUser.role;
+
+        if (currentUser.key === 'manager') {
+            document.getElementById("manager-controls").style.display = "block";
+        }
+
+        // الاستماع للتحديثات السحابية المباشرة (Realtime Sync)
+        db.ref('plan_data').on('value', (snapshot) => {
+            const data = snapshot.val() || {};
+            cloudStatus = data.status || {};
+            cloudLinks = data.links || {};
+            renderTable();
+            calculateProgress();
+        });
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById("plan-table-body");
+        tbody.innerHTML = "";
+
+        const filteredTasks = tasksData.filter(t => t.term === selectedTerm);
+
+        filteredTasks.forEach(task => {
+            const status = cloudStatus[task.id] || "none";
+            const link = cloudLinks[task.id] || "";
+
+            const isSaeedOrManager = (currentUser.key === "saeed" || currentUser.key === "manager");
+            const isYousefOrManager = (currentUser.key === "yousef" || currentUser.key === "manager");
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td><b>${task.day}</b><br><small style="color: var(--primary-color); font-weight:600;">${task.role}</small></td>
+                <td><small>${task.date}</small></td>
+                <td>${task.task}</td>
+                <td><small>${task.proof}</small></td>
+                <td>
+                    <select class="status-select" data-id="${task.id}" data-status="${status}" ${isSaeedOrManager ? '' : 'disabled'} onchange="updateTaskStatus(this)">
+                        <option value="none" ${status === 'none' ? 'selected' : ''}>لم ينفذ</option>
+                        <option value="progress" ${status === 'progress' ? 'selected' : ''}>قيد التنفيذ</option>
+                        <option value="done" ${status === 'done' ? 'selected' : ''}>تم التنفيذ</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text" class="evidence-input" placeholder="رابط الملف/السحابة" value="${link}" data-id="${task.id}" ${isYousefOrManager ? '' : 'disabled'} onchange="updateTaskLink(this)">
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function updateTaskStatus(el) {
+        const id = el.getAttribute("data-id");
+        const val = el.value;
+        db.ref(`plan_data/status/${id}`).set(val);
+    }
+
+    function updateTaskLink(el) {
+        const id = el.getAttribute("data-id");
+        const val = el.value;
+        db.ref(`plan_data/links/${id}`).set(val);
+    }
+
+    function calculateProgress() {
+        const total = tasksData.length;
+        let score = 0;
+
+        tasksData.forEach(task => {
+            const st = cloudStatus[task.id] || "none";
+            if (st === 'done') score += 1;
+            if (st === 'progress') score += 0.5;
+        });
+
+        const percent = total > 0 ? Math.round((score / total) * 100) : 0;
+        document.getElementById("progress-bar").style.width = percent + "%";
+        document.getElementById("progress-text").innerText = percent + "%";
+    }
+
+    function resetAll() {
+        if (confirm("هل أنت متأكد من إعادة ضبط جميع الحالات والروابط للصفر؟")) {
+            db.ref('plan_data').remove();
+        }
+    }
+</script>
+
+</body>
+</html>
