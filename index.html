@@ -283,10 +283,15 @@
         appId: "1:209892138885:web:ad3742062324a6307faeec"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    // حماية تهيئة فايربيس لمنع أي تعليق في حال عدم الاستجابة الفورية
+    let db = null;
+    try {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.database();
+    } catch (err) {
+        console.error("Firebase Init Error:", err);
+    }
 
-    // تم ضبط الأرقام السرية بدقة: المدير 1111، سعيد 2222، يوسف 3332
     const users = {
         "manager": { name: "أ. ناصر الحكيم", role: "مدير المدرسة", pin: "1111", avatar: "nasser.png" },
         "saeed": { name: "أ. سعيد فرج", role: "مسؤول المتابعة والتنفيذ", pin: "2222", avatar: "saeed.png" },
@@ -417,13 +422,21 @@
             document.getElementById("manager-controls").style.display = "block";
         }
 
-        db.ref('plan_data').on('value', (snapshot) => {
-            const data = snapshot.val() || {};
-            cloudStatus = data.status || {};
-            cloudLinks = data.links || {};
-            renderTable();
-            calculateProgress();
-        });
+        // رسم الجدول مباشرة حتى لو تأخر اتصال السحابة
+        renderTable();
+        calculateProgress();
+
+        if (db) {
+            db.ref('plan_data').on('value', (snapshot) => {
+                const data = snapshot.val() || {};
+                cloudStatus = data.status || {};
+                cloudLinks = data.links || {};
+                renderTable();
+                calculateProgress();
+            }, (error) => {
+                console.warn("Cloud read warning:", error);
+            });
+        }
     }
 
     function isValidUrl(string) {
@@ -437,6 +450,7 @@
 
     function renderTable() {
         const tbody = document.getElementById("plan-table-body");
+        if (!tbody) return;
         tbody.innerHTML = "";
 
         const filteredTasks = tasksData.filter(t => t.term === selectedTerm);
@@ -445,8 +459,8 @@
             const status = cloudStatus[task.id] || "none";
             const link = cloudLinks[task.id] || "";
 
-            const isSaeedOrManager = (currentUser.key === "saeed" || currentUser.key === "manager");
-            const isYousefOrManager = (currentUser.key === "yousef" || currentUser.key === "manager");
+            const isSaeedOrManager = currentUser && (currentUser.key === "saeed" || currentUser.key === "manager");
+            const isYousefOrManager = currentUser && (currentUser.key === "yousef" || currentUser.key === "manager");
 
             const tr = document.createElement("tr");
 
@@ -487,13 +501,13 @@
     function updateTaskStatus(el) {
         const id = el.getAttribute("data-id");
         const val = el.value;
-        db.ref(`plan_data/status/${id}`).set(val);
+        if (db) db.ref(`plan_data/status/${id}`).set(val);
     }
 
     function updateTaskLink(el) {
         const id = el.getAttribute("data-id");
         const val = el.value.trim();
-        db.ref(`plan_data/links/${id}`).set(val);
+        if (db) db.ref(`plan_data/links/${id}`).set(val);
     }
 
     function calculateProgress() {
@@ -507,13 +521,15 @@
         });
 
         const percent = total > 0 ? Math.round((score / total) * 100) : 0;
-        document.getElementById("progress-bar").style.width = percent + "%";
-        document.getElementById("progress-text").innerText = percent + "%";
+        const progressBar = document.getElementById("progress-bar");
+        const progressText = document.getElementById("progress-text");
+        if (progressBar) progressBar.style.width = percent + "%";
+        if (progressText) progressText.innerText = percent + "%";
     }
 
     function resetAll() {
         if (confirm("هل أنت متأكد من إعادة ضبط جميع الحالات والروابط للصفر؟")) {
-            db.ref('plan_data').remove();
+            if (db) db.ref('plan_data').remove();
         }
     }
 </script>
