@@ -423,20 +423,26 @@
             document.getElementById("manager-controls").style.display = "block";
         }
 
-        // 1. عرض الجدول محلياً فوراً لمنع أي تعليق
+        // 1. عرض الجدول محلياً فوراً
         renderTable();
         calculateProgress();
 
-        // 2. جلب البيانات من السحابة في الخلفية بأمان ت تام
+        // 2. جلب البيانات مرة واحدة وتحديثها بسلاسة دون تعليق شريط العنوان
         if (db) {
+            db.ref('plan_data').once('value').then((snapshot) => {
+                const data = snapshot.val() || {};
+                cloudStatus = data.status || {};
+                cloudLinks = data.links || {};
+                renderTable();
+                calculateProgress();
+            }).catch(err => console.error(err));
+
             db.ref('plan_data').on('value', (snapshot) => {
                 const data = snapshot.val() || {};
                 cloudStatus = data.status || {};
                 cloudLinks = data.links || {};
                 renderTable();
                 calculateProgress();
-            }, (error) => {
-                console.error("Firebase Read Error:", error);
             });
         }
     }
