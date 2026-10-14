@@ -145,9 +145,13 @@
             padding: 4px 10px; border-radius: 6px; font-size: 0.78rem; text-decoration: none; font-weight: 700; margin-top: 2px;
         }
 
+        /* Footer */
         footer { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 25px; margin-top: 35px; }
-        .signature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; text-align: center; }
+        .signature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; text-align: center; margin-bottom: 25px; padding-bottom: 25px; border-bottom: 1px solid var(--border-color); }
         .sig-box { padding: 18px; background: #f8fafc; border-radius: 12px; border: 2px dashed var(--border-color); }
+        .footer-copyrights { text-align: center; color: #64748b; font-size: 0.88rem; line-height: 1.8; }
+        .footer-copyrights a { color: var(--etec-secondary); text-decoration: none; font-weight: 700; }
+        .footer-copyrights a:hover { text-decoration: underline; }
 
         @media print {
             #login-overlay, #welcome-banner, .controls, .user-bar, .term-tabs, .evidence-buttons { display: none !important; }
@@ -158,7 +162,7 @@
 <body>
 
 <!-- Login Modal -->
-<div id="login-overlay">
+<div id="login-overlay" style="display: none;">
     <div class="login-card">
         <img src="moe-logo.png" alt="شعار وزارة التعليم" class="login-logo" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/2/2b/Emblem_of_Saudi_Arabia.svg'">
         <h2>منظومة متابعة الخطة التحسينية</h2>
@@ -275,6 +279,11 @@
                 <div style="font-weight: 800; color: var(--etec-primary); font-size: 1.05rem;">أ. ناصر الحكيم</div>
             </div>
         </div>
+        <div class="footer-copyrights">
+            <p>© 2026 vanta-voids | All Rights Reserved</p>
+            <p><a href="mailto:Yh.addict@gmail.com">Yh.addict@gmail.com</a></p>
+            <p>جميع الحقوق محفوظة، يُسمح باقتباس ونقل المحتوى مع المحافظة على الإشارة للمرجع.</p>
+        </div>
     </footer>
 </div>
 
@@ -377,6 +386,24 @@
     let cloudStatus = {};
     let cloudLinks = {};
 
+    // فحص حالة الدخول عند تحميل الصفحة مباشرة
+    window.addEventListener('DOMContentLoaded', () => {
+        const savedUser = localStorage.getItem('etec_current_user');
+        if (savedUser) {
+            currentUser = JSON.parse(savedUser);
+            document.getElementById("login-overlay").style.display = "none";
+            
+            const banner = document.getElementById("welcome-banner");
+            document.getElementById("welcome-title").innerText = `أهلاً بك يا ${currentUser.name} (${currentUser.role}) 🌟`;
+            document.getElementById("welcome-msg").innerText = getUniqueMotivationalQuote();
+            banner.style.display = "block";
+
+            initApp();
+        } else {
+            document.getElementById("login-overlay").style.display = "flex";
+        }
+    });
+
     function performLogin() {
         const roleKey = document.getElementById("user-role").value;
         const pin = document.getElementById("user-pin").value.trim();
@@ -392,6 +419,7 @@
 
         if (users[roleKey] && users[roleKey].pin === pin) {
             currentUser = { key: roleKey, ...users[roleKey] };
+            localStorage.setItem('etec_current_user', JSON.stringify(currentUser));
             document.getElementById("login-overlay").style.display = "none";
             
             const banner = document.getElementById("welcome-banner");
@@ -406,6 +434,8 @@
     }
 
     function logout() {
+        localStorage.removeItem('etec_current_user');
+        currentUser = null;
         document.getElementById("login-overlay").style.display = "flex";
         document.getElementById("user-pin").value = "";
         document.getElementById("user-role").value = "";
@@ -527,9 +557,7 @@
         if (!inputEl) return;
         const val = inputEl.value.trim();
         if (db) {
-            db.ref(`plan_data/links/${id}`).set(val).then(() => {
-                // حفظ ناجح اختياري (تحديث مباشر عبر سحب Firebase)
-            }).catch(err => console.error(err));
+            db.ref(`plan_data/links/${id}`).set(val).catch(err => console.error(err));
         }
     }
 
