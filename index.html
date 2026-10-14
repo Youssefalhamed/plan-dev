@@ -4,14 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>منظومة متابعة الخطة التطويرية - ثانوية الملك عبد الله بن عبد العزيز</title>
-    <!-- Google Fonts: Cairo, Tajawal, Almarai -->
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Almarai:wght@400;700;800&family=Cairo:wght@400;600;700;900&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <!-- Firebase SDKs (Compat Version) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <style>
         :root {
-            /* مستوحاة من هوية هيئة التقويم والتدريب ETEC */
             --etec-primary: #004b87;
             --etec-secondary: #0088cc;
             --etec-accent: #00b0ff;
@@ -28,20 +27,18 @@
         body { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); color: var(--etec-dark); padding: 25px; min-height: 100vh; line-height: 1.7; }
         .container { max-width: 1400px; margin: 0 auto; }
 
-        /* Login Modal with ETEC Vibe */
+        /* Login Modal */
         #login-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px);
-            display: flex; justify-content: center; align-items: center; z-index: 1000;
+            background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(10px);
+            display: flex; justify-content: center; align-items: center; z-index: 9999;
             padding: 15px;
         }
         .login-card {
             background: white; padding: 40px 30px; border-radius: 20px;
-            box-shadow: 0 25px 50px -12px rgba(0, 75, 135, 0.25); width: 100%; max-width: 450px; text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 75, 135, 0.3); width: 100%; max-width: 450px; text-align: center;
             border-top: 6px solid var(--etec-primary);
-            animation: fadeIn 0.5s ease-in-out;
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
         .login-logo { width: 85px; height: 85px; object-fit: contain; margin-bottom: 15px; }
         .login-card h2 { color: var(--etec-primary); margin-bottom: 8px; font-size: 1.5rem; font-weight: 800; }
         .login-card p { color: #64748b; font-size: 0.9rem; margin-bottom: 20px; }
@@ -53,14 +50,12 @@
         }
         .form-control:focus { border-color: var(--etec-secondary); background: #fff; box-shadow: 0 0 0 4px rgba(0, 136, 204, 0.15); }
         
-        /* Welcome Toast / Alert Banner */
+        /* Welcome Banner */
         #welcome-banner {
             display: none; background: linear-gradient(135deg, #eff6ff, #dbeafe);
             border: 1px solid #bfdbfe; border-radius: 14px; padding: 18px 22px;
             margin-bottom: 25px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
-            animation: slideDown 0.4s ease; position: relative; overflow: hidden;
         }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         #welcome-banner h3 { color: var(--etec-primary); font-size: 1.2rem; font-weight: 800; margin-bottom: 5px; }
         #welcome-banner p { color: #1e3a8a; font-size: 0.95rem; font-weight: 600; }
 
@@ -83,7 +78,7 @@
             margin-bottom: 25px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);
         }
         .user-profile-info { display: flex; align-items: center; gap: 15px; }
-        .user-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid var(--etec-secondary); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .user-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid var(--etec-secondary); }
         .user-name-title { font-weight: 800; font-size: 1.05rem; color: var(--etec-primary); }
         .user-role-badge {
             background: var(--etec-light); color: var(--etec-primary);
@@ -96,8 +91,8 @@
             box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid var(--border-color);
         }
         .progress-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-weight: 800; font-size: 1.05rem; }
-        .progress-bar-container { width: 100%; height: 22px; background-color: #e2e8f0; border-radius: 12px; overflow: hidden; padding: 3px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.06); }
-        .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--etec-primary), var(--success-color)); border-radius: 10px; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+        .progress-bar-container { width: 100%; height: 22px; background-color: #e2e8f0; border-radius: 12px; overflow: hidden; padding: 3px; }
+        .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--etec-primary), var(--success-color)); border-radius: 10px; transition: width 0.6s ease; }
 
         /* Controls */
         .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; gap: 12px; flex-wrap: wrap; }
@@ -118,7 +113,7 @@
         }
         .tab-btn.active { background: var(--etec-primary); color: white; border-color: var(--etec-primary); box-shadow: 0 4px 12px rgba(0, 75, 135, 0.3); }
 
-        /* Tables & Cards */
+        /* Tables */
         .phase-card { background: var(--card-bg); border-radius: 16px; border: 1px solid var(--border-color); margin-bottom: 25px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.03); }
         .phase-header { padding: 18px 25px; background: #f8fafc; border-bottom: 2px solid var(--border-color); font-weight: 800; color: var(--etec-primary); display: flex; justify-content: space-between; align-items: center; font-size: 1.1rem; }
         .table-responsive { width: 100%; overflow-x: auto; }
@@ -128,7 +123,7 @@
         
         .status-select {
             padding: 8px 12px; border-radius: 8px; border: 2px solid var(--border-color);
-            font-size: 0.88rem; font-weight: 700; cursor: pointer; outline: none; width: 100%; transition: 0.2s;
+            font-size: 0.88rem; font-weight: 700; cursor: pointer; outline: none; width: 100%;
         }
         .status-select[data-status="done"] { background-color: #dcfce7; color: #15803d; border-color: #86efac; }
         .status-select[data-status="progress"] { background-color: #fef9c3; color: #a16207; border-color: #fde047; }
@@ -136,26 +131,21 @@
 
         .evidence-container { display: flex; flex-direction: column; gap: 8px; }
         .evidence-input {
-            width: 100%; padding: 8px 12px; border: 2px solid var(--border-color); border-radius: 8px; font-size: 0.85rem; outline: none; transition: 0.2s;
+            width: 100%; padding: 8px 12px; border: 2px solid var(--border-color); border-radius: 8px; font-size: 0.85rem; outline: none;
         }
-        .evidence-input:focus { border-color: var(--etec-secondary); box-shadow: 0 0 0 3px rgba(0, 136, 204, 0.1); }
         .link-badge {
             display: inline-flex; align-items: center; justify-content: center;
             background: var(--etec-light); color: var(--etec-secondary); border: 1px solid #bfdbfe;
-            padding: 6px 12px; border-radius: 8px; font-size: 0.82rem; text-decoration: none; font-weight: 700; transition: 0.2s;
+            padding: 6px 12px; border-radius: 8px; font-size: 0.82rem; text-decoration: none; font-weight: 700;
         }
-        .link-badge:hover { background: #dbeafe; transform: translateY(-1px); }
 
-        footer { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 25px; margin-top: 35px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+        footer { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 25px; margin-top: 35px; }
         .signature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; text-align: center; }
         .sig-box { padding: 18px; background: #f8fafc; border-radius: 12px; border: 2px dashed var(--border-color); }
 
         @media print {
-            #login-overlay, #welcome-banner, .controls, .user-bar, .term-tabs, .btn-link-edit { display: none !important; }
+            #login-overlay, #welcome-banner, .controls, .user-bar, .term-tabs { display: none !important; }
             body { background: white; padding: 0; }
-            .phase-card { page-break-inside: avoid; border: 1px solid #ccc; box-shadow: none; }
-            .evidence-input { display: none !important; }
-            .link-badge { border: none; background: transparent; color: #000; padding: 0; }
         }
     </style>
 </head>
@@ -164,35 +154,33 @@
 <!-- Login Modal -->
 <div id="login-overlay">
     <div class="login-card">
-        <!-- استدعاء شعار وزارة التعليم من جيت هب -->
         <img src="moe-logo.png" alt="شعار وزارة التعليم" class="login-logo" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/2/2b/Emblem_of_Saudi_Arabia.svg'">
         <h2>منظومة متابعة الخطة التحسينية</h2>
         <p>ثانوية الملك عبد الله بن عبد العزيز (مسارات) - بيشة</p>
-        <form onsubmit="handleLogin(event)">
-            <div class="form-group">
-                <label>اختر الحساب / الصلاحية:</label>
-                <select id="user-role" class="form-control" required>
-                    <option value="">-- اختر المستخدم --</option>
-                    <option value="saeed">أ. سعيد فرج (مسؤول المتابعة والتنفيذ)</option>
-                    <option value="yousef">أ. يوسف القرني (مسؤول الشواهد والأرشفة)</option>
-                    <option value="manager">أ. ناصر الحكيم (مدير المدرسة)</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>الرمز السرّي (PIN):</label>
-                <input type="password" id="user-pin" class="form-control" placeholder="أدخل الرقم السري المكون من 4 أرقام" required maxlength="4">
-            </div>
-            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; margin-top: 10px; font-size: 1rem;">تسجيل الدخول الآمن</button>
-            <p style="margin-top: 18px; font-size: 0.82rem; color: #94a3b8; font-weight: 600;">تصميم وتنفيذ المعلم يوسف القرني</p>
-        </form>
+        
+        <!-- تم تعديل النموذج لتفادي أي أخطاء في الـ Submit -->
+        <div class="form-group">
+            <label>اختر الحساب / الصلاحية:</label>
+            <select id="user-role" class="form-control">
+                <option value="">-- اختر المستخدم --</option>
+                <option value="saeed">أ. سعيد فرج (مسؤول المتابعة والتنفيذ)</option>
+                <option value="yousef">أ. يوسف القرني (مسؤول الشواهد والأرشفة)</option>
+                <option value="manager">أ. ناصر الحكيم (مدير المدرسة)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>الرمز السرّي (PIN):</label>
+            <input type="password" id="user-pin" class="form-control" placeholder="أدخل الرقم السري (4 أرقام)" maxlength="4">
+        </div>
+        <button type="button" onclick="performLogin()" class="btn btn-primary" style="width: 100%; padding: 12px; margin-top: 10px; font-size: 1rem;">تسجيل الدخول الآمن</button>
+        <p style="margin-top: 18px; font-size: 0.82rem; color: #94a3b8; font-weight: 600;">تصميم وتنفيذ المعلم يوسف القرني</p>
     </div>
 </div>
 
 <div class="container">
-    <!-- Welcome Motivational Banner -->
     <div id="welcome-banner">
         <h3 id="welcome-title">أهلاً بك يا قائد النجاح! 🌟</h3>
-        <p id="welcome-msg">عبارة ترحيبية وتنزيل الدعم هنا...</p>
+        <p id="welcome-msg">جاري تحميل رسالة التحفيز...</p>
     </div>
 
     <header>
@@ -210,7 +198,7 @@
             <img id="current-user-avatar" src="" alt="صورة المستخدم" class="user-avatar" onerror="this.src='https://www.w3schools.com/howto/img_avatar.png'">
             <div>
                 <div class="user-name-title" id="current-user-name">...</div>
-                <div style="font-size: 0.8rem; color: var(--success-color); font-weight: 700;">● متصل الآن بالنظام السحابي</div>
+                <div style="font-size: 0.8rem; color: var(--success-color); font-weight: 700;">● متصل الآن بالسحابة</div>
             </div>
         </div>
         <div>
@@ -286,7 +274,6 @@
 </div>
 
 <script>
-    // ⚙️ إعدادات Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyCeUxDOshkAVDZtnYJZv9nX-avJWzwiF9Q",
         authDomain: "school-indicators-app-a3ab6.firebaseapp.com",
@@ -306,62 +293,47 @@
         "manager": { name: "أ. ناصر الحكيم", role: "مدير المدرسة", pin: "1111", avatar: "nasser.png" }
     };
 
-    // 🌟 الـ 24 عبارة تحفيزية وترحيبية فريدة لا تتكرر حتى تنتهي الدورة الكاملة
     const motivationalQuotes = [
         "بداية موفقة ومباركة! عزمكم الصادق يصنع الفارق الحقيقي في تميز صرحنا التعليمي.",
-        "التميز ليس صدفة، بل هو ثمرة التخطيط السليم والمتابعة المستمرة التي تقودونها بكل اقتدار.",
-        "بصمتكم الواضحة اليوم هي أساس الريادة والتقدم لطلابنا الأعزاء في ثانوية الملك عبد الله.",
-        "خطوة بخطوة نحو القمة! جهودكم المبذولة تبني مستقبلاً مشرقاً لأجيال الوطن الغالي.",
-        "بالعزم والإتقان تذلل العقبات؛ شكراً لجهودكم المتميزة في إنجاح خططنا التحسينية.",
-        "عطاء مستمر وروح إيجابية عالية؛ أنتم ركيزة النجاح الحقيقية في منظومتنا التعليمية.",
-        "كل خطوة إنجاز تقربوننا أكثر من تحقيق أهدافنا الاستراتيجية بكل كفاءة واحترافية.",
-        "العمل الجماعي الروحي والتكامل الإداري هو سر تميزنا وتفوقنا المستمر في الميدان.",
-        "بوركت الأيدي العاملة والفكر النيّر الذي يسعى دائماً للأفضل والأرقى دائماً.",
-        "أهلاً بك مجدداً؛ جهودك اليوم تصنع الأثر العظيم وتلهم أبناءنا الطلاب نحو التميز.",
-        "استمروا في هذا العطاء المتميز؛ فالنجاح يحلف لمن يجدّ ويجتهد بإخلاص وأمانة.",
-        "رؤيتكم الواضحة وتنفيذكم الدقيق يعكسان مدى احترافية فريق العمل الرائع.",
-        "شداً للأزر وعملاً دؤوباً؛ بكم تزهو المدارس وتتحقق تطلعات وزارة التعليم والوطن.",
-        "إن أثر جهودكم اليوم يمتد ليصنع أجيالاً واعدة قادرة على تحدي المستحيل.",
-        "شكراً لروح التفاني والإخلاص التي تضعونها في كل مهمة وإجراء تنفيذي.",
-        "التميز غايتنا، والتخطيط المحكم وسيلتنا، وبإرادتكم نحقق المستحيل بعون الله.",
-        "كل إنجاز تسجلونه اليوم هو لبنة صلبة في صرح الجودة والتميز المؤسسي.",
-        "مرحباً بك في ساحة العطاء؛ أنتم صناع المستقبل الحقيقيون في ثانوية الملك عبد الله.",
-        "جهودكم المخلصة محل تقدير واعتزاز؛ فلتستمروا في تألقكم المعهود دائماً.",
-        "بالعلم والعمل الجاد والمتابعة الدقيقة نصل إلى أعلى معايير الجودة والتقويم.",
-        "عطاؤكم المستمر يثمر نجاحات متلاحقة، فلنواصل المسير نحو قمم التميز.",
-        "أهلاً بقائد الإنجاز؛ خطوتكم المباركة اليوم تفتح آفاقاً جديدة للنجاح والتطوير.",
-        "التفاني في العمل رسالة سامية، وبكم تكتمل منظومة الجودة والإبداع المدرسي.",
-        "معاً نصنع الفرق ونحقق الطموحات؛ بوركت جهودكم المتميزة والمستمرة دائماً."
+        "التميز ليس صدفة، بل هو ثمرة التخطيط السليم والمتابعة المستمرة.",
+        "بصمتكم الواضحة اليوم هي أساس الريادة والتقدم لطلابنا الأعزاء.",
+        "خطوة بخطوة نحو القمة! جهودكم المبذولة تبني مستقبلاً مشرقاً.",
+        "بالعزم والإتقان تذلل العقبات؛ شكراً لجهودكم المتميزة.",
+        "عطاؤكم المستمر وروحكم الإيجابية هي ركيزة النجاح الحقيقية.",
+        "كل خطوة إنجاز تقربوننا أكثر من تحقيق أهدافنا الاستراتيجية.",
+        "العمل الجماعي المتكامل هو سر تميزنا وتفوقنا في الميدان.",
+        "بوركت الأيدي العاملة والفكر النيّر الذي يسعى دائماً للأفضل.",
+        "أهلاً بك مجدداً؛ جهودك اليوم تصنع الأثر العظيم وتلهم أبناءنا.",
+        "استمروا في هذا العطاء؛ فالنجاح يحلف لمن يجدّ ويجتهد بإخلاص.",
+        "رؤيتكم الواضحة وتنفيذكم الدقيق يعكسان احترافية فريق العمل.",
+        "شداً للأزر وعملاً دؤوباً؛ بكم تزهو المدارس وتتحقق تطلعات الوطن.",
+        "إن أثر جهودكم اليوم يمتد ليصنع أجيالاً واعدة.",
+        "شكراً لروح التفاني والإخلاص التي تضعونها في كل مهامكم.",
+        "التميز غايتنا والتخطيط المحكم وسيلتنا لتحقيق المستحيل.",
+        "كل إنجاز تسجلونه اليوم هو لبنة صلبة في صرح الجودة.",
+        "مرحباً بك في ساحة العطاء؛ أنتم صناع المستقبل الحقيقيون.",
+        "جهودكم المخلصة محل تقدير واعتزاز مستمر دائماً.",
+        "بالعلم والعمل الجاد والمتابعة الدقيقة نصل لأعلى معايير الجودة.",
+        "عطاؤكم المستمر يثمر نجاحات متلاحقة، فلنواصل المسير.",
+        "أهلاً بقائد الإنجاز؛ خطوتكم المباركة تفتح آفاقاً جديدة للنجاح.",
+        "التفاني في العمل رسالة سامية تكتمل بها منظومة الجودة.",
+        "معاً نصنع الفرق ونحقق الطموحات؛ بوركت جهودكم المتميزة."
     ];
 
-    // دالة جلب عبارة تحفيزية فريدة بدون تكرار حتى تنتهي الـ 24 عبارة
     function getUniqueMotivationalQuote() {
         let usedQuotes = JSON.parse(sessionStorage.getItem('etec_used_quotes') || '[]');
-        
-        // إذا انتهت الـ 24 عبارة، أعد تعيين السجل لدورة جديدة
-        if (usedQuotes.length >= motivationalQuotes.length) {
-            usedQuotes = [];
-        }
-
-        // ابحث عن مؤشر لم يُستخدم بعد
-        let availableIndices = [];
+        if (usedQuotes.length >= motivationalQuotes.length) usedQuotes = [];
+        let available = [];
         for (let i = 0; i < motivationalQuotes.length; i++) {
-            if (!usedQuotes.includes(i)) {
-                availableIndices.push(i);
-            }
+            if (!usedQuotes.includes(i)) available.push(i);
         }
-
-        // اختر عشوائياً من المتاحة
-        let randomIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+        let randomIndex = available[Math.floor(Math.random() * available.length)];
         usedQuotes.push(randomIndex);
-        
         sessionStorage.setItem('etec_used_quotes', JSON.stringify(usedQuotes));
         return motivationalQuotes[randomIndex];
     }
 
-    // 📋 قائمة المهام الـ 24 الشاملة والمحدثة وفق خطط الإشراف والتقويم
     const tasksData = [
-        // --- الفصل الدراسي الأول ---
         { id: 1, term: "الأول", role: "الإدارة واللجان", day: "الأحد", date: "4 أكتوبر (23 ربيع الثاني)", task: "الاعتماد الرسمي للجان وتوزيع المهام واستكمال الجاهزية.", proof: "قرار تشكيل اللجان المعتمد" },
         { id: 2, term: "الأول", role: "لجنة التحصيل", day: "الإثنين", date: "5 أكتوبر (24 ربيع الثاني)", task: "تطبيق الاختبار التشخيصي الرقمي للقدرات والمهارات.", proof: "تقرير نتائج التقييم التشخيصي" },
         { id: 3, term: "الأول", role: "معلمو المواد", day: "الثلاثاء", date: "6 أكتوبر (25 ربيع الثاني)", task: "تطبيق استراتيجية الـ 5 دقائق لحل القدرات بالحصة.", proof: "استمارات الزيارات الصفية" },
@@ -376,8 +348,6 @@
         { id: 12, term: "الأول", role: "لجنة التحصيل", day: "الثلاثاء", date: "2 ديسمبر (22 جمادى الثانية)", task: "تطبيق اختبار المحاكاة التجريبي الأول للقدرات.", proof: "نتائج تحليل الاختبار" },
         { id: 13, term: "الأول", role: "التجهيزات الرقمية", day: "الخميس", date: "10 ديسمبر (1 رجب)", task: "تفقد وصيانة جاهزية الشاشات التفاعلية والشبكة اللاسلكية بمصادر التعلم والمختبرات.", proof: "تقرير الجاهزية الفنية للبيئة الرقمية" },
         { id: 14, term: "الأول", role: "التوجيه والنشاط", day: "الأربعاء", date: "23 ديسمبر (14 رجب)", task: "احتفالية تكريم الطلاب المتميزين والأندية التقنية.", proof: "صور الفعالية والتكريم" },
-
-        // --- الفصل الدراسي الثاني ---
         { id: 15, term: "الثاني", role: "لجنة التحصيل", day: "الأحد", date: "17 يناير (9 شعبان)", task: "مراجعة خريطة نواتج التعلم وتحديث خطة الدعم العلاجي والتعزيزي.", proof: "خطة الدعم والتعزيز المعتمدة" },
         { id: 16, term: "الثاني", role: "معلمو المواد", day: "الثلاثاء", date: "26 يناير (18 شعبان)", task: "تنفيذ معارض ومشاريع المهارات الرقمية والذكاء الاصطناعي.", proof: "توثيق معرض المشاريع" },
         { id: 17, term: "الثاني", role: "لجنة التميز والنشاط", day: "الخميس", date: "28 يناير (20 شعبان)", task: "إطلاق وتنفيد مسابقة 'عبور 2' التنافسية لتعزيز الأنشطة المدرسية والمهارات.", proof: "إعلان واستمارة تقييم مسابقة عبور 2" },
@@ -395,16 +365,23 @@
     let cloudStatus = {};
     let cloudLinks = {};
 
-    function handleLogin(e) {
-        e.preventDefault();
+    function performLogin() {
         const roleKey = document.getElementById("user-role").value;
         const pin = document.getElementById("user-pin").value;
+
+        if (!roleKey) {
+            alert("الرجاء اختيار المستخدم أولاً!");
+            return;
+        }
+        if (!pin) {
+            alert("الرجاء إدخال الرقم السري!");
+            return;
+        }
 
         if (users[roleKey] && users[roleKey].pin === pin) {
             currentUser = { key: roleKey, ...users[roleKey] };
             document.getElementById("login-overlay").style.display = "none";
             
-            // عرض رسالة ترحيبية وتعزيزية ذكية ومتغيرة
             const banner = document.getElementById("welcome-banner");
             document.getElementById("welcome-title").innerText = `أهلاً بك يا ${currentUser.name} (${currentUser.role}) 🌟`;
             document.getElementById("welcome-msg").innerText = getUniqueMotivationalQuote();
@@ -419,6 +396,7 @@
     function logout() {
         document.getElementById("login-overlay").style.display = "flex";
         document.getElementById("user-pin").value = "";
+        document.getElementById("user-role").value = "";
         document.getElementById("welcome-banner").style.display = "none";
     }
 
@@ -530,7 +508,7 @@
 
         const percent = total > 0 ? Math.round((score / total) * 100) : 0;
         document.getElementById("progress-bar").style.width = percent + "%";
-        document.getElementById("progress-text"].innerText = percent + "%";
+        document.getElementById("progress-text").innerText = percent + "%";
     }
 
     function resetAll() {
