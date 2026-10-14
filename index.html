@@ -129,14 +129,20 @@
         .status-select[data-status="progress"] { background-color: #fef9c3; color: #a16207; border-color: #fde047; }
         .status-select[data-status="none"] { background-color: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
 
-        .evidence-container { display: flex; flex-direction: column; gap: 8px; }
+        .evidence-container { display: flex; flex-direction: column; gap: 6px; }
         .evidence-input {
             width: 100%; padding: 8px 12px; border: 2px solid var(--border-color); border-radius: 8px; font-size: 0.85rem; outline: none;
         }
+        .evidence-buttons { display: flex; gap: 6px; }
+        .btn-save { background-color: var(--success-color); color: white; border: none; padding: 4px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
+        .btn-save:hover { background-color: #059669; }
+        .btn-rest { background-color: var(--danger-color); color: white; border: none; padding: 4px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
+        .btn-rest:hover { background-color: #dc2626; }
+
         .link-badge {
             display: inline-flex; align-items: center; justify-content: center;
             background: var(--etec-light); color: var(--etec-secondary); border: 1px solid #bfdbfe;
-            padding: 6px 12px; border-radius: 8px; font-size: 0.82rem; text-decoration: none; font-weight: 700;
+            padding: 4px 10px; border-radius: 6px; font-size: 0.78rem; text-decoration: none; font-weight: 700; margin-top: 2px;
         }
 
         footer { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 25px; margin-top: 35px; }
@@ -144,7 +150,7 @@
         .sig-box { padding: 18px; background: #f8fafc; border-radius: 12px; border: 2px dashed var(--border-color); }
 
         @media print {
-            #login-overlay, #welcome-banner, .controls, .user-bar, .term-tabs { display: none !important; }
+            #login-overlay, #welcome-banner, .controls, .user-bar, .term-tabs, .evidence-buttons { display: none !important; }
             body { background: white; padding: 0; }
         }
     </style>
@@ -423,11 +429,9 @@
             document.getElementById("manager-controls").style.display = "block";
         }
 
-        // 1. عرض الجدول محلياً فوراً
         renderTable();
         calculateProgress();
 
-        // 2. جلب البيانات مرة واحدة وتحديثها بسلاسة دون تعليق شريط العنوان
         if (db) {
             db.ref('plan_data').once('value').then((snapshot) => {
                 const data = snapshot.val() || {};
@@ -476,7 +480,11 @@
             if (isYousefOrManager) {
                 linkHtml = `
                     <div class="evidence-container">
-                        <input type="text" class="evidence-input" placeholder="أدخل رابط الشاهد السحابي" value="${link}" data-id="${task.id}" onchange="updateTaskLink(this)">
+                        <input type="text" id="link-input-${task.id}" class="evidence-input" placeholder="أدخل رابط الشاهد" value="${link}">
+                        <div class="evidence-buttons">
+                            <button type="button" class="btn-save" onclick="saveTaskLink(${task.id})">Save</button>
+                            <button type="button" class="btn-rest" onclick="resetTaskLink(${task.id})">Rest</button>
+                        </div>
                         ${isValidUrl(link) ? `<a href="${link}" target="_blank" class="link-badge">فتح الرابط 🔗</a>` : ''}
                     </div>
                 `;
@@ -514,11 +522,24 @@
         }
     }
 
-    function updateTaskLink(el) {
-        const id = el.getAttribute("data-id");
-        const val = el.value.trim();
+    function saveTaskLink(id) {
+        const inputEl = document.getElementById(`link-input-${id}`);
+        if (!inputEl) return;
+        const val = inputEl.value.trim();
         if (db) {
-            db.ref(`plan_data/links/${id}`).set(val).catch(err => console.error(err));
+            db.ref(`plan_data/links/${id}`).set(val).then(() => {
+                // حفظ ناجح اختياري (تحديث مباشر عبر سحب Firebase)
+            }).catch(err => console.error(err));
+        }
+    }
+
+    function resetTaskLink(id) {
+        const inputEl = document.getElementById(`link-input-${id}`);
+        if (inputEl) {
+            inputEl.value = "";
+        }
+        if (db) {
+            db.ref(`plan_data/links/${id}`).set("").catch(err => console.error(err));
         }
     }
 
