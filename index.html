@@ -197,7 +197,7 @@
             <img id="current-user-avatar" src="" alt="صورة المستخدم" class="user-avatar" onerror="this.src='https://www.w3schools.com/howto/img_avatar.png'">
             <div>
                 <div class="user-name-title" id="current-user-name">...</div>
-                <div style="font-size: 0.8rem; color: var(--success-color); font-weight: 700;">● متصل الآن بالسحابة</div>
+                <div style="font-size: 0.8rem; color: var(--success-color); font-weight: 700;">● متصل بالنظام</div>
             </div>
         </div>
         <div>
@@ -283,13 +283,14 @@
         appId: "1:209892138885:web:ad3742062324a6307faeec"
     };
 
-    // حماية تهيئة فايربيس لمنع أي تعليق في حال عدم الاستجابة الفورية
     let db = null;
     try {
-        firebase.initializeApp(firebaseConfig);
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         db = firebase.database();
-    } catch (err) {
-        console.error("Firebase Init Error:", err);
+    } catch (e) {
+        console.error("Firebase Init Error:", e);
     }
 
     const users = {
@@ -422,10 +423,11 @@
             document.getElementById("manager-controls").style.display = "block";
         }
 
-        // رسم الجدول مباشرة حتى لو تأخر اتصال السحابة
+        // 1. عرض الجدول محلياً فوراً لمنع أي تعليق
         renderTable();
         calculateProgress();
 
+        // 2. جلب البيانات من السحابة في الخلفية بأمان ت تام
         if (db) {
             db.ref('plan_data').on('value', (snapshot) => {
                 const data = snapshot.val() || {};
@@ -434,7 +436,7 @@
                 renderTable();
                 calculateProgress();
             }, (error) => {
-                console.warn("Cloud read warning:", error);
+                console.error("Firebase Read Error:", error);
             });
         }
     }
@@ -501,13 +503,17 @@
     function updateTaskStatus(el) {
         const id = el.getAttribute("data-id");
         const val = el.value;
-        if (db) db.ref(`plan_data/status/${id}`).set(val);
+        if (db) {
+            db.ref(`plan_data/status/${id}`).set(val).catch(err => console.error(err));
+        }
     }
 
     function updateTaskLink(el) {
         const id = el.getAttribute("data-id");
         const val = el.value.trim();
-        if (db) db.ref(`plan_data/links/${id}`).set(val);
+        if (db) {
+            db.ref(`plan_data/links/${id}`).set(val).catch(err => console.error(err));
+        }
     }
 
     function calculateProgress() {
@@ -529,7 +535,14 @@
 
     function resetAll() {
         if (confirm("هل أنت متأكد من إعادة ضبط جميع الحالات والروابط للصفر؟")) {
-            if (db) db.ref('plan_data').remove();
+            if (db) {
+                db.ref('plan_data').remove().then(() => {
+                    cloudStatus = {};
+                    cloudLinks = {};
+                    renderTable();
+                    calculateProgress();
+                });
+            }
         }
     }
 </script>
